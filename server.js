@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+const { response } = require('express');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -19,28 +20,64 @@ const db = mysql.createConnection({
 });
 
 // Data Arrays
-getEmployees = () => {
-    db.query(
-        'SELECT * FROM `employee`',
-        function(err, results) {
-            console.table(results.firstName); // results contains rows returned by server
-            // const employeeList = [];
-            return employeeList;
-        }
-    );    
-}
-
-getEmployees(); 
-
 const employeeList = [];
 const departmentList = [];
 const roleList = [];
+
+getEmployees = () => {
+    db.query(
+        'SELECT first_name, last_name FROM `employee`',
+        function(err, results) {
+            for(let i =0; i< results.length; i++) {
+                const { first_name, last_name } = results[i];
+                const fullName = first_name +' '+ last_name;
+                employeeList.push(fullName);
+            }
+            // console.log(employeeList);
+            return employeeList;
+        }
+    )
+}
+
+getEmployees();
+
+getRoles = () => {
+    db.query(
+        'SELECT title FROM `role`',
+        function(err, results) {
+            for(let i =0; i< results.length; i++) {
+                const role  = results[i].title;
+                roleList.push(role);
+            }
+            // console.log(roleList);
+            return roleList;
+        }
+    )
+}
+
+getRoles();
+
+getDepartments = () => {
+    db.query(
+        'SELECT name FROM `department`',
+        function(err, results) {
+            for(let i =0; i< results.length; i++) {
+                const department = results[i].name;
+                departmentList.push(department);
+            }
+            // console.log(departmentList);
+            return departmentList;
+        }
+    )
+}
+
+getDepartments();
 
 // Prompt User for Input
 getInput = () => {
     inquirer.prompt({
         type: 'list',
-        choices: ['View all employees', 'Add employee', 'Update employee role', 'View all roles', 'Add role', 'View all departments', 'Add department', 'Quit'],
+        choices: ['View all employees', 'Add employee', 'Update employee role', 'View all roles', 'Add role', 'View all departments', 'Add department'],
         name: 'option',
         message: 'What would you like to do?'
     })
@@ -48,18 +85,22 @@ getInput = () => {
         // console.log(response.option);
         if (response.option == 'Add employee') {
             addEmployee();
+            getEmployees();
         } else if (response.option == 'View all employees') {
             viewEmployees();
         } else if (response.option == 'Update employee role') {
             updateRole();
+            getEmployees();
         } else if (response.option == 'View all roles') {
             viewRoles();
         } else if (response.option == 'Add role') {
             addRole();
+            getRoles();
         } else if (response.option == 'View all departments') {
             viewDepartments();
         } else if (response.option == 'Add department') {
             addDepartment();
+            getDepartments();
         } else {
             console.log('Select an option')
         }
@@ -99,7 +140,6 @@ addEmployee = () => {
         },
         {
             type: 'list',
-            // get from list of current employees
             choices: employeeList,
             name: 'manager',
             message: 'Manager: '
@@ -139,11 +179,26 @@ updateRole = () => {
     ])
 
     .then((response => {
+        // get role title from role table, use role id to update employee by name
+        name = response.employeeToUpdate.split(' ');
+        const first_name = name[0];
+        const last_name = name[1];
+        const newRole = response.newRole;
+
+        // find role id from roll table by role title
         db.query(
-            `UPDATE employee SET role_id = '${response.newRole}' [WHERE id = '${response.employeeToUpdate}']`, 
+            `SELECT id FROM role WHERE title = '${newRole}'`,
             function(err, results) {
                 if (err) console.error(err);
-                console.log('Employee updated'); 
+                const roleID = results[0].id
+                // update employee's role id in employee table
+                db.query(
+                    `UPDATE employee SET role_id = ${roleID} WHERE first_name = '${first_name}' AND last_name = '${last_name}'`, 
+                    function(err, results) {
+                        if (err) console.error(err);
+                        console.log('Employee role updated'); 
+                    }
+                )
             }
         )
     }))
