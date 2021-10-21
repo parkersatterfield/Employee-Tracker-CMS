@@ -70,26 +70,25 @@ getInput = () => {
     .then((response) => {
         if (response.option == 'Add employee') {
             getEmployees();
+            getRoles();
             addEmployee();
-            
         } else if (response.option == 'View all employees') {
             viewEmployees();
         } else if (response.option == 'Update employee role') {
             getEmployees();
+            getRoles();
             updateRole();
-            
         } else if (response.option == 'View all roles') {
             viewRoles();
         } else if (response.option == 'Add role') {
             getRoles();
+            getDepartments();
             addRole();
-            
         } else if (response.option == 'View all departments') {
             viewDepartments();
         } else if (response.option == 'Add department') {
             getDepartments();
             addDepartment();
-            
         } else {
             console.log('Select an option')
         }

@@ -7,7 +7,7 @@
 ## Mock Up
 ![Mock Up](./assets/mock.png)  
 
-Video Link: https://drive.google.com/file/d/1wtAWYbcGyiMsjoufs0TDoAZsx3tCO2m8/view?usp=sharing
+Video Link: https://drive.google.com/file/d/1iSejSF9RmT-exOd424sfp4wRyfH9hTJW/view?usp=sharing
 
 ## Table of Contents 
 
