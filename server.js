@@ -117,7 +117,7 @@ getInput();
 // function that runs when view all employees is selected
 viewEmployees = () => {
     db.query(
-        `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, employee.manager_id, department.name FROM employee, role, department WHERE employee.role_id = role.id AND department.id = role.department_id`,
+        `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, employee.manager_id, department.name FROM employee, role, department WHERE employee.role_id = role.id AND department.id = role.department_id ORDER BY employee.id`,
         function(err, results) {
             console.log('\n');
             console.table(results); // results contains rows returned by server
