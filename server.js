@@ -141,6 +141,12 @@ addEmployee = () => {
         },
         {
             type: 'list',
+            choices: roleList,
+            name: 'employeeRole',
+            message: 'Employee role: '
+        },
+        {
+            type: 'list',
             choices: employeeList,
             name: 'manager',
             message: 'Manager: '
@@ -156,13 +162,21 @@ addEmployee = () => {
             function(err, results) {
                 if (err) console.error(err);
                 const manID = results[0].id;
-                console.log(manID)
                 db.query(
-                `INSERT INTO employee (first_name, last_name, manager_id) VALUES ('${response.firstName}', '${response.lastName}', '${manID}')`, 
-                function(err, results) {
-                    if (err) console.error(err);
-                    console.log('Employee added'); 
-                })
+                    `SELECT id FROM role WHERE title = '${response.employeeRole}'`,
+                    function(err, results) {
+                        if (err) console.error(err);
+                        const connectorID = results[0].id;
+                        console.log(connectorID);
+                        db.query(
+                            `INSERT INTO employee (first_name, last_name, manager_id, role_id) VALUES ('${response.firstName}', '${response.lastName}', '${manID}', '${connectorID}')`, 
+                            function(err, results) {
+                                if (err) console.error(err);
+                                console.log('Employee added'); 
+                            }
+                        )
+                    }
+                )
             }
         )
     }))
