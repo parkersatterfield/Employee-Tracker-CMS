@@ -112,11 +112,12 @@ getInput = () => {
 
 // Run function to initialize app
 getInput();
+//'SELECT * FROM `employee` LEFT JOIN role ON role.id = employee.role_id',
 
 // function that runs when view all employees is selected
 viewEmployees = () => {
     db.query(
-        'SELECT * FROM `employee`',
+        `SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, employee.manager_id, department.name FROM employee, role, department WHERE employee.role_id = role.id AND department.id = role.department_id`,
         function(err, results) {
             console.log('\n');
             console.table(results); // results contains rows returned by server
@@ -147,11 +148,21 @@ addEmployee = () => {
     ])
 
     .then((response => {
+        // parse manager response into first and last names
+        const manFirstName = response.manager.split(' ')[0];
+        const manLastName = response.manager.split(' ')[1];
         db.query(
-            `INSERT INTO employee (first_name, last_name, manager_id) VALUES ('${response.firstName}', '${response.lastName}', '${response.manager}')`, 
+            `SELECT id FROM employee WHERE first_name = '${manFirstName}' AND last_name = '${manLastName}'`,
             function(err, results) {
                 if (err) console.error(err);
-                console.log('Employee added'); 
+                const manID = results[0].id;
+                console.log(manID)
+                db.query(
+                `INSERT INTO employee (first_name, last_name, manager_id) VALUES ('${response.firstName}', '${response.lastName}', '${manID}')`, 
+                function(err, results) {
+                    if (err) console.error(err);
+                    console.log('Employee added'); 
+                })
             }
         )
     }))
@@ -185,7 +196,7 @@ updateRole = () => {
         const last_name = name[1];
         const newRole = response.newRole;
 
-        // find role id from roll table by role title
+        // find role id from role table by role title
         db.query(
             `SELECT id FROM role WHERE title = '${newRole}'`,
             function(err, results) {
@@ -211,7 +222,8 @@ updateRole = () => {
 // function that runs when view all roles is selected
 viewRoles = () => {
     db.query(
-        'SELECT * FROM `role`',
+        // JOIN causes role id to change to department id???
+        'SELECT role.id, role.title, department.name, role.salary FROM role, department WHERE department.id = role.department_id',
         function(err, results) {
             console.log('\n');
             console.table(results); // results contains rows returned by server
@@ -244,12 +256,21 @@ addRole = () => {
 
     .then((response => {
         db.query(
-            `INSERT INTO role (title, salary, department_id) VALUES ('${response.roleTitle}', '${response.roleDepartment}', '${response.roleSalary}')`, 
+            `SELECT id FROM department WHERE name = '${response.roleDepartment}'`,
             function(err, results) {
-                if (err) console.error(err);
-                console.log('Employee added'); 
+                if (err) console.log(err);
+                const connectorID = results[0].id;
+                db.query(
+                    `INSERT INTO role (title, salary, department_id) VALUES ('${response.roleTitle}', ${response.roleSalary}, ${connectorID})`, 
+                    function(err, results) {
+                        if (err) console.error(err);
+                        console.log('Employee added'); 
+                    }
+                )
             }
         )
+        
+        
     }))
 
     .then((response => {
