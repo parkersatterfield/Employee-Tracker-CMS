@@ -2,14 +2,6 @@ const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const { response } = require('express');
-
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 
 // Connect to database
 const db = mysql.createConnection({
@@ -33,12 +25,10 @@ getEmployees = () => {
                 const fullName = first_name +' '+ last_name;
                 employeeList.push(fullName);
             }
-            // console.log(employeeList);
             return employeeList;
         }
     )
 }
-
 getEmployees();
 
 getRoles = () => {
@@ -49,12 +39,10 @@ getRoles = () => {
                 const role  = results[i].title;
                 roleList.push(role);
             }
-            // console.log(roleList);
             return roleList;
         }
     )
 }
-
 getRoles();
 
 getDepartments = () => {
@@ -65,12 +53,10 @@ getDepartments = () => {
                 const department = results[i].name;
                 departmentList.push(department);
             }
-            // console.log(departmentList);
             return departmentList;
         }
     )
 }
-
 getDepartments();
 
 // Prompt User for Input
@@ -82,25 +68,28 @@ getInput = () => {
         message: 'What would you like to do?'
     })
     .then((response) => {
-        // console.log(response.option);
         if (response.option == 'Add employee') {
-            addEmployee();
             getEmployees();
+            addEmployee();
+            
         } else if (response.option == 'View all employees') {
             viewEmployees();
         } else if (response.option == 'Update employee role') {
-            updateRole();
             getEmployees();
+            updateRole();
+            
         } else if (response.option == 'View all roles') {
             viewRoles();
         } else if (response.option == 'Add role') {
-            addRole();
             getRoles();
+            addRole();
+            
         } else if (response.option == 'View all departments') {
             viewDepartments();
         } else if (response.option == 'Add department') {
-            addDepartment();
             getDepartments();
+            addDepartment();
+            
         } else {
             console.log('Select an option')
         }
@@ -167,12 +156,11 @@ addEmployee = () => {
                     function(err, results) {
                         if (err) console.error(err);
                         const connectorID = results[0].id;
-                        console.log(connectorID);
                         db.query(
                             `INSERT INTO employee (first_name, last_name, manager_id, role_id) VALUES ('${response.firstName}', '${response.lastName}', '${manID}', '${connectorID}')`, 
                             function(err, results) {
                                 if (err) console.error(err);
-                                console.log('Employee added'); 
+                                console.log('\n Employee added'); 
                             }
                         )
                     }
@@ -221,7 +209,7 @@ updateRole = () => {
                     `UPDATE employee SET role_id = ${roleID} WHERE first_name = '${first_name}' AND last_name = '${last_name}'`, 
                     function(err, results) {
                         if (err) console.error(err);
-                        console.log('Employee role updated'); 
+                        console.log('\n Employee role updated'); 
                     }
                 )
             }
@@ -278,7 +266,7 @@ addRole = () => {
                     `INSERT INTO role (title, salary, department_id) VALUES ('${response.roleTitle}', ${response.roleSalary}, ${connectorID})`, 
                     function(err, results) {
                         if (err) console.error(err);
-                        console.log('Employee added'); 
+                        console.log('\n Employee added'); 
                     }
                 )
             }
@@ -324,7 +312,7 @@ addDepartment = () => {
             `INSERT INTO department (name, id) VALUES ('${response.departmentName}', '${response.departmentID}')`, 
             function(err, results) {
                 if (err) console.error(err);
-                console.log('Employee added'); 
+                console.log('\n Employee added'); 
             }
         )
     }))
@@ -333,12 +321,3 @@ addDepartment = () => {
         getInput();
     }))
 };
-
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-    res.status(404).end();
-});
-
-app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
-});
